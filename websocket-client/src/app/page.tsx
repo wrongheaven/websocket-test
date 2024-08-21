@@ -1,12 +1,15 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { v7 as uuidv7 } from 'uuid';
 
 type ClientData = {
     id: string;
     x: number;
     y: number;
 };
+
+const id = uuidv7();
 
 export default function Home() {
     const [clients, setClients] = useState<ClientData[]>([]);
@@ -21,7 +24,9 @@ export default function Home() {
             setInterval(() => {
                 const centerX = window.screenX + window.innerWidth / 2;
                 const centerY = window.screenY + window.innerHeight / 2;
-                ws.current?.send(JSON.stringify({ x: centerX, y: centerY }));
+                ws.current?.send(
+                    JSON.stringify({ id, x: centerX, y: centerY }),
+                );
             }, 10);
         };
 
@@ -36,21 +41,32 @@ export default function Home() {
     }, []);
 
     return (
-        <div>
+        <div className="antialiased">
             <svg width="100%" height="100vh">
                 {clients.map((client) => {
-                    console.log(client);
-                    return (
-                        <circle
-                            key={client.id}
-                            cx={client.x - window.screenX}
-                            cy={client.y - window.screenY}
-                            r="50"
-                            fill="red"
-                        />
-                    );
+                    if (client.id === id) return;
+                    return <Circle client={client} fill="red" />;
                 })}
+                <Circle
+                    client={clients.find((client) => client.id === id)}
+                    fill="lime"
+                />
             </svg>
         </div>
     );
 }
+
+const Circle = ({ client, fill }: { client?: ClientData; fill: string }) => {
+    if (!client) return;
+
+    return (
+        <circle
+            cx={client.x - window.screenX}
+            cy={client.y - window.screenY}
+            r="50"
+            fill={fill}
+            stroke="black"
+            strokeWidth="1"
+        />
+    );
+};

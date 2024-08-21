@@ -1,4 +1,3 @@
-import { v7 as uuidv7 } from 'uuid';
 import { WebSocket } from 'ws';
 
 const wss = new WebSocket.Server({ port: 8080 });
@@ -12,13 +11,18 @@ type ClientData = {
 const clients: { [key: string]: ClientData } = {};
 
 wss.on('connection', (ws) => {
-    const id = uuidv7();
-    clients[id] = { id, x: 0, y: 0 };
-    console.log('Client connected:', id);
+    let id = '';
+    let isMsgSent = false;
 
     ws.on('message', (message) => {
-        const data = JSON.parse(message.toString());
-        clients[id] = { ...clients[id], ...data };
+        const data = JSON.parse(message.toString()) as ClientData;
+        id = data.id;
+        clients[id] = data;
+
+        if (!isMsgSent) {
+            console.log('Client connected:', id);
+            isMsgSent = true;
+        }
 
         const broadcastData = JSON.stringify(Object.values(clients));
         wss.clients.forEach((client) => {
