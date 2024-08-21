@@ -6,6 +6,10 @@ type ClientData = {
     id: string;
     x: number;
     y: number;
+    w: number;
+    h: number;
+    cx: number;
+    cy: number;
 };
 
 const clients: { [key: string]: ClientData } = {};
